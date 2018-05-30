@@ -213,9 +213,9 @@ function Lines() {
     if (!stop) requestAnimationFrame(animate)
     c.clearRect(0, 0, canvas.width, canvas.height)
 
-    lines.forEach(function (circle) {
-      circle.draw()
-      circle.update(mouse)
+    lines.forEach(function (line) {
+      line.draw()
+      line.update(mouse)
     })
   }
 
@@ -267,6 +267,199 @@ function Lines() {
   }
 }
 
+function LTLogo() {
+
+  $('canvas').css({background: '#FAFAFE'})
+
+  let stop = false
+
+  let obj = getContext()
+  const canvas = obj.canvas
+  const c = obj.context
+
+  const X_REF = 24
+  const Y_REF = 18
+  const POINT_INTERVAL_CONSTANT = 100
+  const POINT_MOVE_CONSTANT = 2
+  const MAX_LINE_WIDTH_FACTOR = 15
+  const MAX_RADIUS_FACTOR = 15
+  const COLORS = [
+    {r:214,g:14,b:3}, '#12283F', '#01465A', '#9CD4D3'
+  ]
+
+  function getX(x) {
+    return Math.floor((x / X_REF) * canvas.width)
+  }
+
+  function getY(y) {
+    return Math.floor((y / Y_REF) * canvas.height)
+  }
+
+  const L = [
+    { x: 4, y: 3 },
+    { x: 7, y: 3 },
+    { x: 7, y: 12 },
+    { x: 11, y: 12 },
+    { x: 11, y: 15 },
+    { x: 4, y: 15 },
+    { x: 4, y: 3 }
+  ]
+
+  const T = [
+    { x: 9, y: 3 },
+    { x: 20, y: 3 },
+    { x: 20, y: 6 },
+    { x: 16, y: 6 },
+    { x: 16, y: 15 },
+    { x: 13, y: 15 },
+    { x: 13, y: 6 },
+    { x: 9, y: 6 },
+    { x: 9, y: 3 }
+  ]
+
+  function getPoints(coordinates) {
+    let points = []
+
+    let lastPoint = {
+      x: getX(coordinates[0].x),
+      y: getY(coordinates[0].y)
+    }
+    for (let i = 1; i < coordinates.length; i++) {
+      let currentPoint = {
+        x: getX(coordinates[i].x),
+        y: getY(coordinates[i].y)
+      }
+      let intervalX = (currentPoint.x - lastPoint.x) / POINT_INTERVAL_CONSTANT
+      let intervalY = (currentPoint.y - lastPoint.y) / POINT_INTERVAL_CONSTANT
+
+      for (let j = 0; j < POINT_INTERVAL_CONSTANT; j++) {
+        points.push({
+          x: lastPoint.x + intervalX * j,
+          y: lastPoint.y + intervalY * j
+        })
+      }
+
+      lastPoint = currentPoint
+    }
+
+    return points
+  }
+
+  function drawLetter(c, points, radius, color) {
+    for (let i = 0; i < points.length; i++) {
+      c.beginPath()
+      c.arc(
+        ((Math.random() - 0.5) * POINT_MOVE_CONSTANT) + points[i].x,
+        ((Math.random() - 0.5) * POINT_MOVE_CONSTANT) + points[i].y,
+        radius, 0, Math.PI * 2)
+      c.fillStyle = color
+      c.lineWidth = 1
+      c.fill()
+    }
+  }
+
+  function drawRandomLines(c, points, lineWidth) {
+    for (let i = 0; i < (Math.random() * points.length * 100); i++) {
+      let point1 = points[Math.floor(Math.random() * (points.length - 1))]
+      let point2 = points[Math.floor(Math.random() * (points.length - 1))]
+
+      if (Math.abs(point1.x - point2.x) <= 5) {
+
+        c.beginPath()
+        c.moveTo(point1.x, point1.y)
+        c.lineTo(point2.x, point2.y)
+        c.strokeStyle = COLORS[1]
+        c.lineWidth = Math.random() * lineWidth
+        c.stroke()
+      }
+    }
+  }
+
+  function LTLogo(LPoints, TPoints) {
+    this.LPoints = LPoints
+    this.TPoints = TPoints
+    this.lineWidth = 1
+    this.minLineWidth = this.lineWidth
+    this.maxLineWidth = MAX_LINE_WIDTH_FACTOR
+    this.radius = 2
+    this.minRadius = this.radius
+    this.maxRadius = MAX_RADIUS_FACTOR
+    this.colorObj = COLORS[0]
+    this.startColorObj = this.colorObj
+
+    this.draw = function () {
+
+      drawLetter(c,
+        this.LPoints,
+        this.radius,
+        'rgb(' + this.colorObj.r + ',' + this.colorObj.g + ',' + this.colorObj.b + ')')
+      drawLetter(c,
+        this.TPoints,
+        this.radius,
+        'rgb(' + this.colorObj.r + ',' + this.colorObj.g + ',' + this.colorObj.b + ')')
+
+      drawRandomLines(c, this.LPoints, this.lineWidth)
+      drawRandomLines(c, this.TPoints, this.lineWidth)
+    }
+
+    this.update = function (mouse) {
+      this.maxLineWidth = (mouse.y / canvas.height) * MAX_LINE_WIDTH_FACTOR
+      if (this.lineWidth < this.maxLineWidth) this.lineWidth += .5
+      else if (this.lineWidth > this.minLineWidth) this.lineWidth -= .2
+
+      this.maxRadius = (mouse.x / canvas.width) * MAX_RADIUS_FACTOR
+      if (this.radius < this.maxRadius) this.radius += 1
+      else if (this.radius > this.minRadius) this.radius -= .2
+
+      let circlesColor = mouse.x / canvas.width
+      this.colorObj = Math.random() > 0.99 ? {
+        r: Math.abs(Math.floor(this.startColorObj.r + ((Math.random() - 0.5) * 200) * circlesColor)),
+        g: Math.abs(Math.floor(this.startColorObj.g + ((Math.random() - 0.5) * 200) * circlesColor)),
+        b: Math.abs(Math.floor(this.startColorObj.b + ((Math.random() - 0.5) * 200) * circlesColor))
+      } : this.colorObj
+    }
+  }
+
+  let mouse = {
+    x: 0, y: 0
+  }
+
+  window.addEventListener('mousemove', function (event) {
+    mouse.x = event.x
+    mouse.y = event.y
+  })
+
+  window.addEventListener('resize', function() {
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    init()
+  })
+
+  let logos = []
+
+  function animate() {
+    if (!stop) requestAnimationFrame(animate)
+    c.clearRect(0, 0, canvas.width, canvas.height)
+
+    logos.forEach(function (logo) {
+      logo.draw()
+      logo.update(mouse)
+    })
+  }
+
+  function init() {
+    logos = []
+    logos.push(new LTLogo(getPoints(L), getPoints(T)))
+  }
+
+  init()
+  animate()
+
+  return function() {
+    stop = true
+  }
+}
+
 let stop
 function Stop() {
   if (stop) stop()
@@ -286,6 +479,11 @@ $(document).ready(function () {
   $('#animation-2')[0].addEventListener('click', function () {
     Stop()
     Start(Lines)
+  })
+
+  $('#animation-3')[0].addEventListener('click', function () {
+    Stop()
+    Start(LTLogo)
   })
 
 })
