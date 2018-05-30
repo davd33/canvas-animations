@@ -6,6 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Canvas Anim</title>
+    <link href="https://fonts.googleapis.com/css?family=Fredericka+the+Great" rel="stylesheet">
     <style>
         html, body {
             width: 100%;
@@ -23,6 +24,7 @@
             width: 100%;
             background: rgba(0, 0, 0, .5);
             color: white;
+            z-index: 10;
         }
         .pane .control ul {
             list-style: none;
@@ -47,6 +49,24 @@
             background: darkred;
             transition: background 2s ease-in;
         }
+        .pane .title {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            font-family: 'Fredericka the Great', cursive;
+            font-size: 2em;
+            text-align: center;
+        }
+        .pane .title-display {
+            display: none;
+        }
+        .pane .title h1 {
+            align-self: center;
+        }
     </style>
 </head>
 <body>
@@ -59,6 +79,9 @@
         </ul>
     </div>
     <canvas></canvas>
+    <div class="title">
+        <h1>Choose an animation in the menu above!</h1>
+    </div>
 </div>
 
 <script src="node_modules/jquery/dist/jquery.slim.js"></script>

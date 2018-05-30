@@ -136,6 +136,7 @@ function Lines() {
   const N = Math.floor((canvas.height * canvas.width) / 500)
   const LINE_WIDTH_FACTOR = 10
   const MIN_DISTANCE = 500
+  const DECREASE_LINE_WIDTH_FACTOR = .1
   const COLORS = [
     '#F0433A', '#540032', '#820333', '#C9283E'
   ]
@@ -161,17 +162,6 @@ function Lines() {
       c.stroke()
     }
 
-    function notInLineBounds(self, mouse) {
-      if (self.x0 === 0)
-        return mouse.x > self.x1
-      else if (self.x0 === canvas.width)
-        return mouse.x < self.x1
-      else if (self.y0 === 0)
-        return mouse.y > self.y1
-      else if (self.y0 === canvas.height)
-        return mouse.y < self.y1
-    }
-
     this.update = function (mouse) {
 
       let distance = Math.abs(
@@ -187,7 +177,7 @@ function Lines() {
       if (distance < MIN_DISTANCE) {
         if (this.lineWidth < this.maxLineWidth) this.lineWidth += 1
       } else if (this.lineWidth > this.minLineWidth) {
-        this.lineWidth -= 1
+        this.lineWidth -= DECREASE_LINE_WIDTH_FACTOR
       }
 
       if (this.y0 > canvas.height || this.y0 < 0)
@@ -282,6 +272,7 @@ function Stop() {
   if (stop) stop()
 }
 function Start(animationFunc) {
+  $('.pane .title')[0].classList.add('title-display')
   stop = animationFunc()
 }
 
