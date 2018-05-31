@@ -78,6 +78,11 @@ function Bubbles() {
     mouse.y = event.y
   })
 
+  window.addEventListener('touchmove', function (event) {
+    mouse.x = event.x
+    mouse.y = event.y
+  })
+
   window.addEventListener('resize', function() {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
@@ -197,6 +202,11 @@ function Lines() {
   }
 
   window.addEventListener('mousemove', function (event) {
+    mouse.x = event.x
+    mouse.y = event.y
+  })
+
+  window.addEventListener('touchmove', function (event) {
     mouse.x = event.x
     mouse.y = event.y
   })
@@ -489,6 +499,11 @@ function LTLogo() {
   }
 
   window.addEventListener('mousemove', function (event) {
+    mouse.x = event.x
+    mouse.y = event.y
+  })
+
+  window.addEventListener('touchmove', function (event) {
     mouse.x = event.x
     mouse.y = event.y
   })
