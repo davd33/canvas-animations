@@ -358,34 +358,84 @@ function LTLogo() {
     }
   }
 
-  function drawRandomLines(c, points, lineWidth) {
+  function createRandomLine(points, lineWidth) {
+
+    let point1
+    let point2
+
+    do {
+
+      point1 = points[Math.floor(Math.random() * (points.length - 1))]
+      point2 = points[Math.floor(Math.random() * (points.length - 1))]
+
+    } while (Math.abs(point1.x - point2.x) > 5)
+
+    lineWidth = Math.random() * lineWidth
+
+    return {
+      point1: point1,
+      point2: point2,
+      lineWidth: lineWidth,
+      minLineWidth: lineWidth,
+      maxLineWidth: MAX_LINE_WIDTH_FACTOR,
+      latestUpdate: Date.now()
+    }
+  }
+
+  function createRandomLines(points, lineWidth) {
+
+    let lines = []
+
     for (let i = 0; i < (Math.random() * points.length * 100); i++) {
       let point1 = points[Math.floor(Math.random() * (points.length - 1))]
       let point2 = points[Math.floor(Math.random() * (points.length - 1))]
 
-      if (Math.abs(point1.x - point2.x) <= 5) {
+      lineWidth = Math.random() * lineWidth
 
-        c.beginPath()
-        c.moveTo(point1.x, point1.y)
-        c.lineTo(point2.x, point2.y)
-        c.strokeStyle = COLORS[1]
-        c.lineWidth = Math.random() * lineWidth
-        c.stroke()
+      if (Math.abs(point1.x - point2.x) <= 5) {
+        lines.push({
+          point1: point1,
+          point2: point2,
+          lineWidth: lineWidth,
+          minLineWidth: lineWidth,
+          maxLineWidth: MAX_LINE_WIDTH_FACTOR,
+          latestUpdate: Date.now()
+        })
       }
     }
+
+    return lines
+  }
+
+  function drawRandomLines(c, randomLines) {
+
+    randomLines.forEach(function (line) {
+      c.beginPath()
+      c.moveTo(line.point1.x, line.point1.y)
+      c.lineTo(line.point2.x, line.point2.y)
+      c.strokeStyle = COLORS[1]
+      c.lineWidth = line.lineWidth
+      c.stroke()
+    })
   }
 
   function LTLogo(LPoints, TPoints) {
     this.LPoints = LPoints
     this.TPoints = TPoints
-    this.lineWidth = 1
-    this.minLineWidth = this.lineWidth
-    this.maxLineWidth = MAX_LINE_WIDTH_FACTOR
+    this.ALLPoints = LPoints
     this.radius = 2
     this.minRadius = this.radius
     this.maxRadius = MAX_RADIUS_FACTOR
     this.colorObj = COLORS[0]
     this.startColorObj = this.colorObj
+
+    this.TPoints.forEach((function (self) {
+      return function (p) {
+        self.ALLPoints.push(p)
+      }
+    })(this))
+
+    this.randomLines = createRandomLines(this.ALLPoints, 1)
 
     this.draw = function () {
 
@@ -398,14 +448,28 @@ function LTLogo() {
         this.radius,
         'rgb(' + this.colorObj.r + ',' + this.colorObj.g + ',' + this.colorObj.b + ')')
 
-      drawRandomLines(c, this.LPoints, this.lineWidth)
-      drawRandomLines(c, this.TPoints, this.lineWidth)
+      drawRandomLines(c, this.randomLines, this.lineWidth)
     }
 
     this.update = function (mouse) {
-      this.maxLineWidth = (mouse.y / canvas.height) * MAX_LINE_WIDTH_FACTOR
-      if (this.lineWidth < this.maxLineWidth) this.lineWidth += .5
-      else if (this.lineWidth > this.minLineWidth) this.lineWidth -= .2
+      this.randomLines.forEach((function (self) {
+        return function (line) {
+
+          line.maxLineWidth = (mouse.y / canvas.height) * MAX_LINE_WIDTH_FACTOR
+          if (line.lineWidth < line.maxLineWidth) line.lineWidth += .5
+          else if (line.lineWidth > line.minLineWidth) line.lineWidth -= .2
+
+          if ((Date.now() - line.latestUpdate) > (Math.random() * 2000)) {
+            let newLine = createRandomLine(self.ALLPoints, 1)
+            line.point1 = newLine.point1
+            line.point2 = newLine.point2
+            line.lineWidth = newLine.lineWidth
+            line.minLineWidth = newLine.minLineWidth
+            line.maxLineWidth = newLine.maxLineWidth
+            line.latestUpdate = Date.now()
+          }
+        }
+      })(this))
 
       this.maxRadius = (mouse.x / canvas.width) * MAX_RADIUS_FACTOR
       if (this.radius < this.maxRadius) this.radius += 1
