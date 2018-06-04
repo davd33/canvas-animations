@@ -29,7 +29,7 @@ function Bubbles() {
   const DY_FACTOR = 2
   const DISTANCE = 60
   const COLORS = [
-    '#0B438C', '#F2AE30', '#D98014', '#8C3503'
+    [2,38,1], [169,242,5], [262,176,53], [242,129,29]
   ]
 
   function Circle(x, y, dx, dy, radius, color) {
@@ -38,6 +38,7 @@ function Bubbles() {
     this.y = y
     this.dx = dx
     this.dy = dy
+    this.opacity = 0
     this.radius = radius
     this.minRadius = radius
     this.maxRadius = radius * MAX_RADIUS_FACTOR
@@ -45,8 +46,9 @@ function Bubbles() {
     this.draw = function () {
       c.beginPath()
       c.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
-      c.fillStyle = this.color.fill
-      c.strokeStyle = this.color.stroke
+      let c1 = this.color.fill, c2 = this.color.stroke
+      c.fillStyle = 'rgba('+c1[0]+','+c1[1]+','+c1[2]+','+this.opacity+')'
+      c.strokeStyle = 'rgba('+c2[0]+','+c2[1]+','+c2[2]+','+this.opacity+')'
       c.fill()
       c.stroke()
     }
@@ -56,8 +58,11 @@ function Bubbles() {
       if (Math.abs(this.y - mouse.y) < DISTANCE &&
         Math.abs(this.x - mouse.x) < DISTANCE) {
         if (this.radius < this.maxRadius) this.radius += RADIUS_INCREASE_FACTOR
-      } else if (this.radius > this.minRadius)
-        this.radius -= RADIUS_DECREASE_FACTOR
+        if (this.opacity < 1) this.opacity += .05
+      } else {
+        if (this.radius > this.minRadius) this.radius -= RADIUS_DECREASE_FACTOR
+        if (this.opacity > 0) this.opacity -= .01
+      }
 
       if ((this.x + RADIUS > canvas.width) || (this.x - RADIUS < 0))
         this.dx = -this.dx
@@ -113,8 +118,8 @@ function Bubbles() {
         (Math.random() - .5) * DY_FACTOR,
         RADIUS,
         {
-          fill: COLORS[Math.floor(Math.random() * 3) + 1],
-          stroke: COLORS[Math.floor(Math.random() * 3) + 1]
+          fill: randomColor(COLORS),
+          stroke: randomColor(COLORS)
         }
       ))
     }
@@ -264,7 +269,7 @@ function Lines() {
         canvas.height / 2,
         (Math.random() - 0.5) * 2,
         (Math.random() - 0.5) * 2,
-        COLORS[Math.floor(Math.random() * 3) + 1]
+        randomColor(COLORS)
       ))
     }
   }
@@ -539,30 +544,158 @@ function LTLogo() {
   }
 }
 
+function UIButton() {
+
+  $('canvas').css({background: '#FAFAFE'})
+
+  let stop = false
+
+  let obj = getContext()
+  const canvas = obj.canvas
+  const c = obj.context
+
+  const N = Math.floor((canvas.height * canvas.width) / 500)
+  const COLORS = [
+    '#F0433A', '#540032', '#820333', '#C9283E'
+  ]
+
+  function Button(color) {
+    this.color = color
+
+    this.draw = function () {
+      console.log('draw bezier')
+      c.beginPath()
+      c.moveTo(0, 40)
+      c.bezierCurveTo(10, 0, 70, 40, 80, 0)
+      c.strokeStyle = this.color
+      c.stroke()
+      c.closePath()
+      c.beginPath()
+      c.moveTo(0, 0)
+      c.lineTo(10, 10)
+      c.stroke()
+      c.closePath()
+    }
+
+    this.update = function (mouse) {
+
+      this.draw()
+    }
+  }
+
+  let mouse = {
+    x: 0, y: 0
+  }
+
+  window.addEventListener('mousemove', function (event) {
+    mouse.x = event.x
+    mouse.y = event.y
+  })
+
+  window.addEventListener('touchmove', function (event) {
+    mouse.x = event.x
+    mouse.y = event.y
+  })
+
+  window.addEventListener('resize', function() {
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    init()
+  })
+
+  let buttons = []
+
+  function animate() {
+    if (!stop) requestAnimationFrame(animate)
+    c.clearRect(0, 0, canvas.width, canvas.height)
+
+    buttons.forEach(function (button) {
+      button.update(mouse)
+    })
+  }
+
+  function init() {
+    buttons = []
+    for (let i = 0; i < 1; i++) {
+
+      buttons.push(new Button(
+        randomColor(COLORS)
+      ))
+    }
+  }
+
+  init()
+  animate()
+
+  return function() {
+    stop = true
+  }
+}
+
+function randomColor(colors) {
+  return colors[Math.floor(Math.random() * (colors.length - 1)) + 1]
+}
+
 let stop
+let stopCB
 function Stop() {
   if (stop) stop()
+  if (stopCB) stopCB()
 }
-function Start(animationFunc) {
-  $('.pane .title')[0].classList.add('title-display')
+function Start(animationFunc, stopCallback) {
   stop = animationFunc()
+  stopCB = stopCallback
+}
+
+function deactivateCanvas() {
+  $('.pane > canvas').css('display', 'none')
+}
+
+function activateCanvas() {
+  $('.pane > canvas').css('display', 'block')
+}
+
+function activateDavdUI() {
+  $('.pane .davd-ui').css('display', 'flex')
+}
+
+function deactivateDavdUI() {
+  $('.pane .davd-ui').css('display', 'none')
+}
+
+function deactivateTitle() {
+  $('.pane .title')[0].classList.add('title-display')
 }
 
 $(document).ready(function () {
 
   $('#animation-1')[0].addEventListener('click', function () {
+    deactivateTitle()
     Stop()
     Start(Bubbles)
   })
 
   $('#animation-2')[0].addEventListener('click', function () {
+    deactivateTitle()
     Stop()
     Start(Lines)
   })
 
   $('#animation-3')[0].addEventListener('click', function () {
+    deactivateTitle()
     Stop()
     Start(LTLogo)
+  })
+
+  $('#animation-4')[0].addEventListener('click', function () {
+    Stop()
+    deactivateTitle()
+    deactivateCanvas()
+    activateDavdUI()
+    Start(UIButton, function () {
+      activateCanvas()
+      deactivateDavdUI()
+    })
   })
 
 })

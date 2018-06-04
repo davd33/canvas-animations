@@ -6,7 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Canvas Anim</title>
-    <link href="https://fonts.googleapis.com/css?family=Fredericka+the+Great" rel="stylesheet">
+    <!--<link href="https://fonts.googleapis.com/css?family=Fredericka+the+Great" rel="stylesheet">-->
     <style>
         html, body {
             width: 100%;
@@ -67,6 +67,36 @@
         .pane .title h1 {
             align-self: center;
         }
+        .pane .davd-ui {
+            display: none;
+            height: calc(100vh - 50px);
+            padding-top: 50px;
+            justify-content: space-around;
+            background: darkblue;
+        }
+        .pane .davd-ui button {
+            height: 40px;
+            position: relative;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            box-shadow: 1px 1px 5px black;
+            transition: all .2s ease-in;
+        }
+        .pane .davd-ui button:hover {
+            color: yellow;
+            cursor: pointer;
+        }
+        .pane .davd-ui button canvas {
+            display: block;
+            color: white;
+        }
+        .pane .davd-ui button span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
     </style>
 </head>
 <body>
@@ -77,9 +107,16 @@
             <li><a id="animation-1">Bubbles</a></li>
             <li><a id="animation-2">Lines</a></li>
             <li><a id="animation-3">LT Logo</a></li>
+            <li><a id="animation-4">Davd UI</a></li>
         </ul>
     </div>
     <canvas></canvas>
+    <div class="davd-ui">
+        <button>
+            <canvas></canvas>
+            <span class=".msg">Send!</span>
+        </button>
+    </div>
     <div class="title">
         <h1>Choose an animation in the menu above!</h1>
     </div>
